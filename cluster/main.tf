@@ -24,32 +24,40 @@ resource "oci_containerengine_cluster" "this" {
     }
   }
   kms_key_id = var.kms_key_id
-  options {
-    add_ons {
-      is_kubernetes_dashboard_enabled = var.dashboard_enabled
-      is_tiller_enabled               = false
-    }
-    kubernetes_network_config {
-      pods_cidr     = var.pods_cidr
-      services_cidr = var.services_cidr
-    }
-    dynamic "persistent_volume_config" {
-      for_each = var.persistent_volume_config[*]
-      iterator = pvc
-      content {
-	defined_tags  = pvc.value.defined_tags
-	freeform_tags = pvc.value.freeform_tags
+  dynamic "options" {
+    for_each = var.options[*]
+    iterator = o
+    content {
+      add_ons {
+	is_kubernetes_dashboard_enabled = o.value.dashboard_enabled
+	is_tiller_enabled               = false
       }
-    }
-    dynamic "service_lb_config" {
-      for_each = var.service_lb_config[*]
-      iterator = slc
-      content {
-	defined_tags  = slc.value.defined_tags
-	freeform_tags = slc.value.freeform_tags
+      dynamic "kubernetes_network_config" {
+	for_each = o.value.kubernetes_network_config[*]
+	iterator = knc
+	content {
+	  pods_cidr     = knc.value.pods_cidr
+	  services_cidr = knc.value.var.services_cidr
+	}
       }
+      dynamic "persistent_volume_config" {
+	for_each = o.value.persistent_volume_config[*]
+	iterator = pvc
+	content {
+	  defined_tags  = pvc.value.defined_tags
+	  freeform_tags = pvc.value.freeform_tags
+	}
+      }
+      dynamic "service_lb_config" {
+	for_each = o.value.service_lb_config[*]
+	iterator = slc
+	content {
+	  defined_tags  = slc.value.defined_tags
+	  freeform_tags = slc.value.freeform_tags
+	}
+      }
+      service_lb_subnet_ids = o.value.service_lb_subnet_ids
     }
-    service_lb_subnet_ids = var.service_lb_subnet_ids
   }
   type = var.type
 }

@@ -67,46 +67,25 @@ variable "image_policy_config" {
   default = null
 }
 
-variable "dashboard_enabled" {
-  description = "(Optional) Whether or not to enable the Kubernetes Dashboard add-on."
-  type        = bool
-  default     = false
-}
-
-variable "pods_cidr" {
-  description = "(Optional) The CIDR block for Kubernetes pods. Optional, defaults to 10.244.0.0/16."
-  type        = string
-  default     = "10.244.0.0/16"
-}
-
-variable "services_cidr" {
-  description = "(Optional) The CIDR block for Kubernetes services. Optional, defaults to 10.96.0.0/16."
-  type        = string
-  default     = "10.96.0.0/16"
-}
-
-variable "persistent_volume_config" {
-  description = "(Optional) (Updatable) Configuration to be applied to block volumes created by Kubernetes Persistent Volume Claims (PVC)"
+variable "options" {
+  description = "(Optional) (Updatable) Optional attributes for the cluster."
   type = object({
-    defined_tags  = optional(map(string))
-    freeform_tags = optional(map(string))
+    dashboard_enabled = optional(bool)
+    kubernetes_network_config = optional(object({
+      pods_cidr     = optional(string)
+      services_cidr = optional(string)
+    }))
+    persistent_volume_config = optional(object({
+      defined_tags  = optional(map(string))
+      freeform_tags = optional(map(string))
+    }))
+    service_lb_config = optional(object({
+      defined_tags  = optional(map(string))
+      freeform_tags = optional(map(string))
+    }))
+    service_lb_subnet_ids = optional(list(string))
   })
   default = null
-}
-
-variable "service_lb_config" {
-  description = "(Optional) (Updatable) Configuration to be applied to load balancers created by Kubernetes services"
-  type = object({
-    defined_tags  = optional(map(string))
-    freeform_tags = optional(map(string))
-  })
-  default = null
-}
-
-variable "service_lb_subnet_ids" {
-  description = "(Optional) The OCIDs of the subnets used for Kubernetes services load balancers."
-  type        = list(any)
-  default     = []
 }
 
 variable "type" {
