@@ -18,24 +18,14 @@ variable "vcn_id" {
   type        = string
 }
 
-variable "type" {
-  description = "Cluster type: BASIC_CLUSTER or ENHANCED_CLUSTER"
-  type        = string
-  default     = "ENHANCED_CLUSTER"
-  validation {
-    condition     = contains(["BASIC_CLUSTER", "ENHANCED_CLUSTER"], var.type)
-    error_message = "Cluster TYPE must be BASIC_CLUSTER or ENHANCED_CLUSTER."
-  }
-}
-
 variable "defined_tags" {
-  description = "Defined tags"
+  description = "(Optional) (Updatable) Defined tags for this resource. Each key is predefined and scoped to a namespace. For more information, see [Resource Tags](https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm)."
   type        = map(string)
   default     = null
 }
 
 variable "freeform_tags" {
-  description = "Free-form tags"
+  description = "(Optional) (Updatable) Free-form tags for this resource. Each tag is a simple key-value pair with no predefined name, type, or namespace. For more information, see [Resource Tags](https://docs.cloud.oracle.com/iaas/Content/General/Concepts/resourcetags.htm)."
   type        = map(string)
   default     = {}
 }
@@ -56,21 +46,25 @@ variable "cni_type" {
   }
 }
 
-variable "is_public_ip_enabled" {
-  description = "(Optional) Whether the cluster should be assigned a public IP address. Defaults to false. If set to true on a private subnet, the cluster provisioning will fail."
-  type        = bool
-  default     = false
+variable "endpoint_config" {
+  description = "(Required) The network configuration for access to the Cluster control plane."
+  type = object({
+    is_public_ip_enabled = optional(bool)
+    nsg_ids              = optional(list(string))
+    subnet_id            = optional(string)
+  })
+  default = {
+    nsg_ids = []
+  }
 }
 
-variable "nsg_ids" {
-  description = "(Optional) A list of the OCIDs of the network security groups (NSGs) to apply to the cluster endpoint. For more information about NSGs, see [NetworkSecurityGroup](https://docs.cloud.oracle.com/iaas/api/#/en/iaas/20160918/NetworkSecurityGroup/)."
-  type        = list(string)
-  default     = []
-}
-
-variable "subnet_id" {
-  description = "(Optional) The OCID of the regional subnet in which to place the Cluster endpoint."
-  type        = string
+variable "image_policy_config" {
+  description = "(Optional) (Updatable) The image verification policy for signature validation. Once a policy is created and enabled with one or more kms keys, the policy will ensure all images deployed has been signed with the key(s) attached to the policy. "
+  type = object({
+    is_policy_enabled = optional(bool)
+    kms_key_id        = optional(string)
+  })
+  default = null
 }
 
 variable "dashboard_enabled" {
@@ -91,26 +85,36 @@ variable "services_cidr" {
   default     = "10.96.0.0/16"
 }
 
-variable "pvc_tags" {
-  description = "Tags used for PVC"
-  type        = map(string)
-  default     = {}
+variable "persistent_volume_config" {
+  description = "(Optional) (Updatable) Configuration to be applied to block volumes created by Kubernetes Persistent Volume Claims (PVC)"
+  type = object({
+    defined_tags  = optional(map(string))
+    freeform_tags = optional(map(string))
+  })
+  default = null
 }
 
-variable "service_lb_tags" {
-  description = "Tags used for Service LB"
-  type        = map(string)
-  default     = {}
+variable "service_lb_config" {
+  description = "(Optional) (Updatable) Configuration to be applied to load balancers created by Kubernetes services"
+  type = object({
+    defined_tags  = optional(map(string))
+    freeform_tags = optional(map(string))
+  })
+  default = null
 }
 
 variable "service_lb_subnet_ids" {
-  description = "OCIDs of the subnets used for Kubernetes services load balancers"
+  description = "(Optional) The OCIDs of the subnets used for Kubernetes services load balancers."
   type        = list(any)
   default     = []
 }
 
-variable "is_policy_enabled" {
-  description = "(Optional) (Updatable) Whether or not to enable the Pod Security Policy admission controller."
-  type        = bool
-  default     = false
+variable "type" {
+  description = "Cluster type: BASIC_CLUSTER or ENHANCED_CLUSTER"
+  type        = string
+  default     = "ENHANCED_CLUSTER"
+  validation {
+    condition     = contains(["BASIC_CLUSTER", "ENHANCED_CLUSTER"], var.type)
+    error_message = "Cluster TYPE must be BASIC_CLUSTER or ENHANCED_CLUSTER."
+  }
 }
