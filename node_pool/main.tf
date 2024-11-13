@@ -46,7 +46,11 @@ resource "oci_containerengine_node_pool" "this" {
 	  cni_type          = i.value.cni_type
 	  max_pods_per_node = i.value.max_pods_per_node
 	  pod_nsg_ids       = i.value.pod_nsg_ids
-	  pod_subnet_ids    = i.value.cni_type == "OCI_VCN_IP_NATIVE" ? i.value.pod_subnet_ids : []
+	  pod_subnet_ids = (
+	    i.value.cni_type == "OCI_VCN_IP_NATIVE" ?
+	    [for k in i.value.pod_subnet_names : lookup(var.subnet_ids, k)] :
+	    []
+	  )
 	}
       }
       defined_tags  = ncd.value.defined_tags

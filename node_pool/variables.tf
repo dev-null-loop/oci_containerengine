@@ -72,7 +72,7 @@ variable "node_config_details" {
     node_pool_pod_network_option_details = optional(object({
       cni_type          = string
       max_pods_per_node = optional(number)
-      pod_subnet_ids    = optional(list(string))
+      pod_subnet_names  = optional(list(string))
       pod_nsg_ids       = optional(list(string))
     }))
     defined_tags  = optional(map(string))
