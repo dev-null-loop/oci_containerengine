@@ -52,17 +52,12 @@ variable "initial_node_labels" {
   default = []
 }
 
-variable "subnet_ids" {
-  description = "(Required) (Updatable) The OCID of the subnet in which to place nodes."
-  type        = map(string)
-}
-
 variable "node_config_details" {
   description = "(Optional) (Updatable) The configuration of nodes in the node pool. Exactly one of the subnetIds or nodeConfigDetails properties must be specified."
   type = object({
     placement_configs = list(object({
       availability_domain     = number
-      fault_domain            = optional(number)
+      fault_domains           = optional(list(number))
       subnet_name             = string
       capacity_reservation_id = optional(string)
     }))
@@ -97,6 +92,22 @@ variable "node_eviction_node_pool_settings" {
   }
 }
 
+variable "node_metadata" {
+  description = "(Optional) (Updatable) A list of key/value pairs to add to each underlying Oracle Cloud Infrastructure instance in the node pool on launch."
+  type        = map(string)
+  default     = {}
+}
+
+variable "node_pool_cycling_details" {
+  description = "(Optional) (Updatable) Node Pool Cycling Details"
+  type = object({
+    is_node_cycling_enabled = optional(bool)
+    maximum_surge           = optional(number)
+    maximum_unavailable     = optional(number)
+  })
+  default = null
+}
+
 variable "node_shape_config" {
   description = "(Optional) (Updatable) Specify the configuration of the shape to launch nodes in the node pool."
   type = object({
@@ -117,7 +128,7 @@ variable "node_source_details" {
     source_type             = optional(string)
   })
   default = {
-    image_id    = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaamcgmhtrrwsnum6ardettcyi7f73c4bg6svoshhgtnufkprqm2xyq"
+    image_id    = "ocid1.image.oc1.eu-zurich-1.aaaaaaaagrb3ranyq6u4mall2dsdcy7chyfnarruxjftu6d4dh5vrfsagwsa"
     source_type = "IMAGE"
   }
 }
@@ -126,4 +137,15 @@ variable "ssh_public_key" {
   description = "(Optional) (Updatable) The SSH public key on each node in the node pool on launch."
   type        = string
   default     = null
+}
+
+variable "subnet_ids" {
+  description = "(Optional) (Updatable) The OCIDs of the subnets in which to place nodes for this node pool. When used, quantityPerSubnet can be provided. This property is deprecated, use nodeConfigDetails. Exactly one of the subnetIds or nodeConfigDetails properties must be specified."
+  type        = map(string)
+}
+
+variable "image_name" {
+  description = "(Required) image name to be used for provisioning nodes"
+  type        = string
+  default     = "Oracle-Linux-8.10-2024.09.30-0"
 }

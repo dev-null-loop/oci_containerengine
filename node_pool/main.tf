@@ -2,8 +2,19 @@ data "oci_identity_availability_domains" "these" {
   compartment_id = var.compartment_id
 }
 
+data "oci_containerengine_node_pool_option" "this" {
+  node_pool_option_id = var.cluster_id
+  compartment_id      = var.compartment_id
+}
+
 locals {
-  ads = data.oci_identity_availability_domains.these.availability_domains
+  ads         = data.oci_identity_availability_domains.these.availability_domains
+  k8sver      = trim(var.kubernetes_version, "v")
+  k8s_version = "${var.image_name}-OKE-${local.k8sver}"
+  image_id = [
+    for img in data.oci_containerengine_node_pool_option.this.sources[*] :
+    img.image_id if length(regexall("${local.k8s_version}-.*", img.source_name)) > 0
+  ][0]
 }
 
 resource "oci_containerengine_node_pool" "this" {
@@ -32,7 +43,7 @@ resource "oci_containerengine_node_pool" "this" {
 	content {
 	  availability_domain     = local.ads[pc.value.availability_domain - 1].name
 	  subnet_id               = var.subnet_ids[pc.value.subnet_name]
-	  fault_domains           = pc.value.fault_domain != null ? [format("FAULT-DOMAIN-%s", pc.value.fault_domain)] : []
+	  fault_domains           = try([for i in pc.value.fault_domains : format("FAULT-DOMAIN-%s", pc.value.fault_domain)], [])
 	  capacity_reservation_id = pc.value.capacity_reservation_id
 	}
       }
@@ -66,6 +77,16 @@ resource "oci_containerengine_node_pool" "this" {
       is_force_delete_after_grace_duration = i.value.is_force_delete_after_grace_duration
     }
   }
+  node_metadata = var.node_metadata
+  dynamic "node_pool_cycling_details" {
+    for_each = var.node_pool_cycling_details[*]
+    iterator = npc
+    content {
+      is_node_cycling_enabled = npc.value.is_node_cycling_enabled
+      maximum_surge           = npc.value.maximum_surge
+      maximum_unavailable     = npc.value.maximum_unavailable
+    }
+  }
   dynamic "node_shape_config" {
     for_each = var.node_shape_config[*]
     iterator = nsc
@@ -78,10 +99,10 @@ resource "oci_containerengine_node_pool" "this" {
     for_each = var.node_source_details[*]
     iterator = nsd
     content {
-      boot_volume_size_in_gbs = nsd.value.boot_volume_size_in_gbs
-      image_id                = nsd.value.image_id
+      image_id                = local.image_id
       source_type             = nsd.value.source_type
+      boot_volume_size_in_gbs = nsd.value.boot_volume_size_in_gbs
     }
   }
-  ssh_public_key = try(file(var.ssh_public_key), null)
+  ssh_public_key = var.ssh_public_key
 }
