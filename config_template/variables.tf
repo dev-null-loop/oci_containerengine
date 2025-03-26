@@ -17,5 +17,5 @@ variable "oci_profile" {
 variable "helm_config_dir" {
   description = "Path where OKE config files will be saved"
   type        = string
-  default     = "./"
+  default     = "."
 }
