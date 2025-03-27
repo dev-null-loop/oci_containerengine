@@ -1,31 +1,27 @@
 provider "helm" {
   kubernetes {
-    host                   = host
-    cluster_ca_certificate = base64decode("${cert}")
+    host                    = "${host}"
+    cluster_ca_certificate  = base64decode("${cert}")
     exec {
-      api_version = api_version
-      args = [
-	"ce", "cluster", "generate-token", "--cluster-id",
-	"${cluster_id}",
-	"--profile", "${profile}",
-	"--region", "${cluster_region}"
-      ]
-      command = "oci"
+      api_version = "${api_version}"
+      args        = [ "ce", "cluster", "generate-token", "--cluster-id",
+		      "${cluster_id}",
+		      "--profile", "${profile}",
+		      "--region","${cluster_region}"]
+      command     = "oci"
     }
   }
 }
 
 provider "kubernetes" {
-  host                   = host
-  cluster_ca_certificate = base64decode("${cert}")
+  host                    = "${host}"
+  cluster_ca_certificate  = base64decode("${cert}")
   exec {
-    api_version = api_version
-    args = [
-      "ce", "cluster", "generate-token", "--cluster-id",
-      "${cluster_id}",
-      "--profile", "${profile}",
-      "--region", "${cluster_region}"
-    ]
-    command = "oci"
+    api_version = "${api_version}"
+    args        = ["ce", "cluster", "generate-token", "--cluster-id",
+		  "${cluster_id}",
+		  "--profile", "${profile}",
+		  "--region", "${cluster_region}"]
+      command   = "oci"
   }
 }
