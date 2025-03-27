@@ -20,6 +20,7 @@ locals {
 }
 
 resource "local_sensitive_file" "provider" {
+  count = var.providers_enabled == true ? 1 : 0
   content = templatefile("${path.module}/providers.tftpl",
     {
       host           = local.kube_config.host,

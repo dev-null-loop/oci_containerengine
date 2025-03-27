@@ -19,3 +19,9 @@ variable "helm_config_dir" {
   type        = string
   default     = "."
 }
+
+variable "providers_enabled" {
+  description = "Create helm/kubernetes provider configuration file or not"
+  type        = bool
+  default     = false
+}
