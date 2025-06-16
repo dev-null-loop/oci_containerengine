@@ -124,13 +124,9 @@ variable "node_source_details" {
   description = "(Optional) (Updatable) Specify the source to use to launch nodes in the node pool. Currently, image is the only supported source."
   type = object({
     boot_volume_size_in_gbs = optional(number)
-    image_id                = string
+    image_name              = string
     source_type             = optional(string)
   })
-  default = {
-    image_id    = "ocid1.image.oc1.eu-zurich-1.aaaaaaaagrb3ranyq6u4mall2dsdcy7chyfnarruxjftu6d4dh5vrfsagwsa"
-    source_type = "IMAGE"
-  }
 }
 
 variable "ssh_public_key" {
