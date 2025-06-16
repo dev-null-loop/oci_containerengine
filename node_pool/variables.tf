@@ -144,8 +144,7 @@ variable "subnet_ids" {
   type        = map(string)
 }
 
-variable "image_name" {
-  description = "(Required) image name to be used for provisioning nodes"
+variable "image_id" {
+  description = "(Required) Image OCID to be used for the worker nodes"
   type        = string
-  default     = "Oracle-Linux-8.10-2024.09.30-0"
 }

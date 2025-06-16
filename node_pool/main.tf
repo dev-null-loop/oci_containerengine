@@ -2,19 +2,8 @@ data "oci_identity_availability_domains" "these" {
   compartment_id = var.compartment_id
 }
 
-data "oci_containerengine_node_pool_option" "this" {
-  node_pool_option_id = var.cluster_id
-  compartment_id      = var.compartment_id
-}
-
 locals {
-  ads         = data.oci_identity_availability_domains.these.availability_domains
-  k8sver      = trim(var.kubernetes_version, "v")
-  k8s_version = "${var.image_name}-OKE-${local.k8sver}"
-  image_id = [
-    for img in data.oci_containerengine_node_pool_option.this.sources[*] :
-    img.image_id if length(regexall("${local.k8s_version}-.*", img.source_name)) > 0
-  ][0]
+  ads = data.oci_identity_availability_domains.these.availability_domains
 }
 
 resource "oci_containerengine_node_pool" "this" {
@@ -99,7 +88,7 @@ resource "oci_containerengine_node_pool" "this" {
     for_each = var.node_source_details[*]
     iterator = nsd
     content {
-      image_id                = local.image_id
+      image_id                = var.image_id
       source_type             = nsd.value.source_type
       boot_volume_size_in_gbs = nsd.value.boot_volume_size_in_gbs
     }
