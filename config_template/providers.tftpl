@@ -1,8 +1,8 @@
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                    = "${host}"
     cluster_ca_certificate  = base64decode("${cert}")
-    exec {
+    exec = {
       api_version = "${api_version}"
       args        = [ "ce", "cluster", "generate-token", "--cluster-id",
 		      "${cluster_id}",
