@@ -75,6 +75,25 @@ variable "options" {
       pods_cidr     = optional(string)
       services_cidr = optional(string)
     }))
+    open_id_connect_token_authentication_config = optional(object({
+      ca_certificate                  = optional(string)
+      client_id                       = optional(string)
+      configuration_file              = optional(string)
+      groups_claim                    = optional(string)
+      groups_prefix                   = optional(string)
+      is_open_id_connect_auth_enabled = bool
+      issuer_url                      = optional(string)
+      required_claims = optional(object({
+        key   = optional(string)
+        value = optional(string)
+      }))
+      signing_algorithms = optional(list(string))
+      username_claim     = optional(string)
+      username_prefix    = optional(string)
+    }))
+    open_id_connect_discovery = optional(object({
+      is_open_id_connect_discovery_enabled = optional(bool)
+    }))
     persistent_volume_config = optional(object({
       defined_tags  = optional(map(string))
       freeform_tags = optional(map(string))

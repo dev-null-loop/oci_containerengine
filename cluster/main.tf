@@ -19,7 +19,7 @@ resource "oci_containerengine_cluster" "this" {
     content {
       is_policy_enabled = ipc.value.is_policy_enabled
       key_details {
-	kms_key_id = ipc.value.kms_key_id
+        kms_key_id = ipc.value.kms_key_id
       }
     }
   }
@@ -29,32 +29,63 @@ resource "oci_containerengine_cluster" "this" {
     iterator = o
     content {
       add_ons {
-	is_kubernetes_dashboard_enabled = o.value.dashboard_enabled
-	is_tiller_enabled               = false
+        is_kubernetes_dashboard_enabled = o.value.dashboard_enabled
+        is_tiller_enabled               = false
       }
       dynamic "kubernetes_network_config" {
-	for_each = o.value.kubernetes_network_config[*]
-	iterator = knc
-	content {
-	  pods_cidr     = knc.value.pods_cidr
-	  services_cidr = knc.value.var.services_cidr
-	}
+        for_each = o.value.kubernetes_network_config[*]
+        iterator = knc
+        content {
+          pods_cidr     = knc.value.pods_cidr
+          services_cidr = knc.value.var.services_cidr
+        }
+      }
+      dynamic "open_id_connect_token_authentication_config" {
+        for_each = o.value.open_id_connect_token_authentication_config[*]
+        iterator = open_id
+        content {
+          is_open_id_connect_auth_enabled = open_id.value.is_open_id_connect_auth_enabled
+          ca_certificate                  = open_id.value.ca_certificate
+          client_id                       = open_id.value.client_id
+          configuration_file              = open_id.value.configuration_file
+          groups_claim                    = open_id.value.groups_claim
+          groups_prefix                   = open_id.value.groups_prefix
+          issuer_url                      = open_id.value.issuer_url
+          dynamic "required_claims" {
+            for_each = open_id.value.required_claims[*]
+            iterator = rc
+            content {
+              key   = rc.value.key
+              value = rc.value.value
+            }
+          }
+          signing_algorithms = open_id.value.signing_algorithms
+          username_claim     = open_id.value.username_claim
+          username_prefix    = open_id.value.username_prefix
+        }
+      }
+      dynamic "open_id_connect_discovery" {
+        for_each = o.value.open_id_connect_discovery[*]
+        iterator = oicd
+        content {
+          is_open_id_connect_discovery_enabled = oicd.value.is_open_id_connect_discovery_enabled
+        }
       }
       dynamic "persistent_volume_config" {
-	for_each = o.value.persistent_volume_config[*]
-	iterator = pvc
-	content {
-	  defined_tags  = pvc.value.defined_tags
-	  freeform_tags = pvc.value.freeform_tags
-	}
+        for_each = o.value.persistent_volume_config[*]
+        iterator = pvc
+        content {
+          defined_tags  = pvc.value.defined_tags
+          freeform_tags = pvc.value.freeform_tags
+        }
       }
       dynamic "service_lb_config" {
-	for_each = o.value.service_lb_config[*]
-	iterator = slc
-	content {
-	  defined_tags  = slc.value.defined_tags
-	  freeform_tags = slc.value.freeform_tags
-	}
+        for_each = o.value.service_lb_config[*]
+        iterator = slc
+        content {
+          defined_tags  = slc.value.defined_tags
+          freeform_tags = slc.value.freeform_tags
+        }
       }
       service_lb_subnet_ids = o.value.service_lb_subnet_ids
     }
