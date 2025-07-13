@@ -20,12 +20,17 @@ variable "helm_config_dir" {
   default     = "."
 }
 
+variable "kubeconfig_path" {
+  description = "(Optional) Path to store kubeconfig to"
+  type        = string
+  default     = "."
+}
+
 variable "providers_enabled" {
   description = "(Optional) Wheter to generate helm/kubernetes provider configuration file or not"
   type        = bool
   default     = false
 }
-
 
 variable "instance_principal_enabled" {
   description = "(Optional) Whether to generate kubeconfig for an instance principal or not."

@@ -4,7 +4,7 @@ data "oci_containerengine_cluster_kube_config" "this" {
 
 resource "local_sensitive_file" "kubeconfig" {
   content         = data.oci_containerengine_cluster_kube_config.this.content
-  filename        = "${var.helm_config_dir}/${var.cluster_name}.yaml"
+  filename        = "${var.kubeconfig_path}/${var.cluster_name}.yaml"
   file_permission = "600"
 }
 
