@@ -83,8 +83,8 @@ variable "node_eviction_node_pool_settings" {
     is_force_delete_after_grace_duration = optional(bool)
   })
   default = {
-    eviction_grace_duration              = "PT1H"
-    is_force_delete_after_grace_duration = false
+    eviction_grace_duration              = "PT0M"
+    is_force_delete_after_grace_duration = true
   }
   validation {
     condition     = can(regex("^(PT)([0-9]?[0-9])(M|H)$", var.node_eviction_node_pool_settings.eviction_grace_duration))
