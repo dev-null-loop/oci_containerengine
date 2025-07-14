@@ -2,11 +2,18 @@ resource "oci_containerengine_addon" "this" {
   addon_name                       = var.addon_name
   cluster_id                       = var.cluster_id
   remove_addon_resources_on_delete = var.remove_addon_resources_on_delete
+  # dynamic "configurations" {
+  #   for_each = var.configurations != null ? var.configurations : []
+  #   content {
+  #     key   = configurations.value.key
+  #     value = configurations.value.value
+  #   }
+  # }
   dynamic "configurations" {
-    for_each = var.configurations[*]
+    for_each = { for k in keys(var.configurations) : k => var.configurations[k] }
     content {
-      key   = configurations.value.key
-      value = configurations.value.value
+      key   = configurations.key
+      value = configurations.value
     }
   }
   override_existing = var.override_existing
