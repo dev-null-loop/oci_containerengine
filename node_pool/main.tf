@@ -26,8 +26,8 @@ resource "oci_containerengine_node_pool" "this" {
     for_each = var.node_config_details[*]
     iterator = ncd
     content {
-      dynamic "placement_configs" {
-	for_each = ncd.value.placement_configs[*]
+      placement_configs {
+	for_each = ncd.value.placement_configs
 	iterator = pc
 	content {
 	  availability_domain     = local.ads[pc.value.availability_domain - 1].name
