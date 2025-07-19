@@ -124,9 +124,10 @@ variable "node_source_details" {
   description = "(Optional) (Updatable) Specify the source to use to launch nodes in the node pool. Currently, image is the only supported source."
   type = object({
     boot_volume_size_in_gbs = optional(number)
-    image_name              = string
-    source_type             = optional(string)
+    image_name              = optional(string)
+    source_type             = optional(string, "image")
   })
+  default = {}
 }
 
 variable "ssh_public_key" {
@@ -143,4 +144,19 @@ variable "subnet_ids" {
 variable "image_id" {
   description = "(Required) Image OCID to be used for the worker nodes"
   type        = string
+}
+
+variable "ubuntu_releases" {
+  description = "(Optional) For worker nodes on Ubuntu"
+  type        = map(string)
+  default = {
+    (22.04) = "jammy"
+    (24.04) = "noble"
+  }
+}
+
+variable "ubuntu_release" {
+  description = "(Optional) For worker nodes on Ubuntu"
+  type        = string
+  default     = null
 }

@@ -26,8 +26,8 @@ resource "oci_containerengine_node_pool" "this" {
     for_each = var.node_config_details[*]
     iterator = ncd
     content {
-      placement_configs {
-	for_each = ncd.value.placement_configs
+      dynamic "placement_configs" {
+	for_each = ncd.value.placement_configs[*]
 	iterator = pc
 	content {
 	  availability_domain     = local.ads[pc.value.availability_domain - 1].name
@@ -66,7 +66,12 @@ resource "oci_containerengine_node_pool" "this" {
       is_force_delete_after_grace_duration = i.value.is_force_delete_after_grace_duration
     }
   }
-  node_metadata = var.node_metadata
+  node_metadata = merge(
+    var.node_metadata,
+    {
+      user_data = try(base64encode(data.cloudinit_config.this[0].rendered), null)
+    }
+  )
   dynamic "node_pool_cycling_details" {
     for_each = var.node_pool_cycling_details[*]
     iterator = npc
@@ -84,14 +89,10 @@ resource "oci_containerengine_node_pool" "this" {
       ocpus         = nsc.value.ocpus
     }
   }
-  dynamic "node_source_details" {
-    for_each = var.node_source_details[*]
-    iterator = nsd
-    content {
-      image_id                = var.image_id
-      source_type             = nsd.value.source_type
-      boot_volume_size_in_gbs = nsd.value.boot_volume_size_in_gbs
-    }
+  node_source_details {
+    boot_volume_size_in_gbs = var.node_source_details.boot_volume_size_in_gbs
+    image_id                = var.image_id
+    source_type             = "image"
   }
   ssh_public_key = var.ssh_public_key
 }
