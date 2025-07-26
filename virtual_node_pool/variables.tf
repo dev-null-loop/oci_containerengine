@@ -64,7 +64,7 @@ variable "pod_configuration" {
   description = "The pod configuration for pods run on virtual nodes of this virtual node pool"
   type = object({
     shape       = string
-    subnet_name = string
+    subnet_name = optional(string)
     nsg_ids     = optional(list(string))
   })
   nullable = false
