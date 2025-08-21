@@ -5,8 +5,8 @@ resource "oci_containerengine_addon" "this" {
   dynamic "configurations" {
     for_each = var.configurations
     content {
-      key   = configuration.key
-      value = configuration.value
+      key   = configurations.key
+      value = configurations.value
     }
   }
   override_existing = var.override_existing
