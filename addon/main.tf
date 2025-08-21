@@ -19,13 +19,19 @@ resource "oci_containerengine_addon" "this" {
   dynamic "configurations" {
     for_each = var.configurations[*]
     content {
-      key   = each.key
-      value = each.value
+      key   = configuration.key
+      value = configuration.value
     }
   }
   override_existing = var.override_existing
   version           = var.addon_version
 }
+
+# output "new_map" {
+#   value = { for k, v in local.configurations : k => lookup(local.resources_ids, k, v) }
+# }
+
+# lookup(map, key, default_value)
 
 # resource "azurerm_resource_group" "rg" {
 #   for_each = tomap({
