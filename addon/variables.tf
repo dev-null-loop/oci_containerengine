@@ -26,7 +26,7 @@ variable "remove_addon_resources_on_delete" {
 variable "configurations" {
   description = "(Optional) (Updatable) Addon configuration details"
   type        = map(string)
-  default     = null
+  default     = {}
 }
 
 
@@ -40,4 +40,10 @@ variable "addon_version" {
   description = "(Optional) (Updatable) The version of addon to be installed."
   type        = number
   default     = null
+}
+
+variable "resource_ids" {
+  description = "(Optional) (Updatable) Map of resource ids for configuring the addon"
+  type        = map(string)
+  default     = {}
 }
