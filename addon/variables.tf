@@ -14,21 +14,11 @@ variable "remove_addon_resources_on_delete" {
   default     = true
 }
 
-# variable "configurations" {
-#   description = "(Optional) (Updatable) Addon configuration details"
-#   type = list(object({
-#     key   = optional(string)
-#     value = optional(string)
-#   }))
-#   default = null
-# }
-
 variable "configurations" {
   description = "(Optional) (Updatable) Addon configuration details"
   type        = map(string)
   default     = {}
 }
-
 
 variable "override_existing" {
   description = "(Optional) Whether or not to override an existing addon installation. Defaults to false. If set to true, any existing addon installation would be overridden as per new installation details."
@@ -40,10 +30,4 @@ variable "addon_version" {
   description = "(Optional) (Updatable) The version of addon to be installed."
   type        = number
   default     = null
-}
-
-variable "resource_ids" {
-  description = "(Optional) (Updatable) Map of resource ids for configuring the addon"
-  type        = map(string)
-  default     = {}
 }
