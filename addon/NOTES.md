@@ -18,3 +18,20 @@
   }
   ```
 - I still need to figure out the `AutoScaler` call since that's more complicated (the `nodes` configuration)
+- to list all annotations for all `OKE` operators execute the following stack:
+
+``` shell
+data "oci_containerengine_addon_options" "these" {
+  for_each           = toset(local.addons)
+  kubernetes_version = "v1.33.1"
+  addon_name         = each.key
+}
+
+output "addons_annotations" {
+  value = { for k, v in data.oci_containerengine_addon_options.these :
+	k => {
+	  for i in v.addon_options[0].versions[0].configurations : i.key => i.value
+	}
+  }
+}
+```
