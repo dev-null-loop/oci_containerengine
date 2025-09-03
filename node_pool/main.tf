@@ -95,4 +95,8 @@ resource "oci_containerengine_node_pool" "this" {
     source_type             = "image"
   }
   ssh_public_key = var.ssh_public_key
+  timeouts {
+    create = "10m"
+    delete = "10m"
+  }
 }
