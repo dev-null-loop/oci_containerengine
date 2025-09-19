@@ -83,7 +83,7 @@ variable "node_eviction_node_pool_settings" {
     is_force_delete_after_grace_duration = optional(bool)
   })
   default = {
-    eviction_grace_duration              = "PT0M"
+    eviction_grace_duration              = "PT2M"
     is_force_delete_after_grace_duration = true
   }
   validation {
