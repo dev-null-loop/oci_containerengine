@@ -48,7 +48,7 @@ resource "oci_containerengine_node_pool" "this" {
 	  pod_nsg_ids       = i.value.pod_nsg_ids
 	  pod_subnet_ids = (
 	    i.value.cni_type == "OCI_VCN_IP_NATIVE" ?
-	    [for k in i.value.pod_subnet_names : lookup(var.subnet_ids, k)] :
+	    [for k in i.value.pod_subnet_names : lookup(var.pod_subnet_ids, k)] :
 	    []
 	  )
 	}

@@ -35,3 +35,5 @@ output "addons_annotations" {
   }
 }
 ```
+
+- or faster: `oci ce addon-option list --kubernetes-version v1.33.1 *| jq -r '.data[]|select(."name" == "Istio")|.versions[0].configurations[] | {(.key): .value}'`
