@@ -84,8 +84,8 @@ variable "options" {
       is_open_id_connect_auth_enabled = bool
       issuer_url                      = optional(string)
       required_claims = optional(object({
-        key   = optional(string)
-        value = optional(string)
+	key   = optional(string)
+	value = optional(string)
       }))
       signing_algorithms = optional(list(string))
       username_claim     = optional(string)
@@ -104,7 +104,11 @@ variable "options" {
     }))
     service_lb_subnet_ids = optional(list(string))
   })
-  default = null
+  default = {
+    open_id_connect_discovery = {
+      is_open_id_connect_discovery_enabled = true
+    }
+  }
 }
 
 variable "type" {
