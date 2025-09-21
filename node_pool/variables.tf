@@ -160,3 +160,8 @@ variable "ubuntu_release" {
   type        = string
   default     = null
 }
+
+variable "pod_subnet_ids" {
+  type    = map(string)
+  default = {}
+}
