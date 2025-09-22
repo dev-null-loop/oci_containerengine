@@ -40,7 +40,7 @@ jobs:
         run: |
           oci setup repair-file-permissions --file ~/.oci/config
           oci setup repair-file-permissions --file ~/.oci/key.pem
-          echo "COMPARTMENT_OCID=$(oci iam compartment list | python3 -c "import sys, json; print(json.dumps([x for x in json.load(sys.stdin)['data'] if x['name'] == '${{ env.COMPARTMENT_NAME }}']))"| jq '.[0].id')" >> $GITHUB_ENV
+          echo "COMPARTMENT_OCID=ocid1.compartment.oc1..aaaaaaaa7sjjhowkrqmg6hjcsrkzftqgygt272aig2yycgmd5a7paw5unoea" >> $GITHUB_ENV
       - name: 'Retrieve OCI bastion resource ID'
         run: |
           oci setup repair-file-permissions --file ~/.oci/config
