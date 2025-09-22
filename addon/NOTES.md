@@ -1,3 +1,4 @@
+- [Working with the Cluster Autoscaler as a Cluster Add-on](https://docs.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengusingclusterautoscaler_topic-Working_with_Cluster_Autoscaler_as_Cluster_Add-on.htm)
 - a root call to this module might look like this:
   ``` shell
   module "addons" {
@@ -37,3 +38,6 @@ output "addons_annotations" {
 ```
 
 - or faster: `oci ce addon-option list --kubernetes-version v1.33.1 *| jq -r '.data[]|select(."name" == "Istio")|.versions[0].configurations[] | {(.key): .value}'`
+
+- The `nodeGroupAutoDiscovery` parameter value has the following format: `"value": "compartmentId:{{<compartment-ocid>}},nodepoolTags:{{<tagKey1>}}={{<tagValue1>}}&{{<tagKey2>}}={{<tagValue2>}},min:{{<min-nodes>}},max:{{<max-nodes>}}"`
+- The `nodes` parameter value has the following format: `"value": "<min-nodes>:<max-nodes>:<nodepool-ocid>"`
