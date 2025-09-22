@@ -2,7 +2,7 @@ name: Master CI/CD
 on:
   push:
     branches:
-      - 'master'
+      - 'main'
       - 'feature/**'
 jobs:
   build:
