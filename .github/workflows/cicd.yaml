@@ -64,11 +64,10 @@ jobs:
       - name: 'Install kubectl'
         run: |
           mkdir /tmp/.kube
-          curl -L -O "https://dl.k8s.io/release/v1.22.4/bin/linux/amd64/kubectl" -o kubectl
+          curl -L -O "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl" -o kubectl
           chmod +x kubectl
           mv kubectl /usr/local/bin
           oci ce cluster create-kubeconfig --cluster-id ${{ env.CLUSTER_ID }} --file /tmp/.kube/config --region eu-frankfurt-1 --token-version 2.0.0
-          sed -i 's/${{ env.CLUSTER_PRIVATE_IP }}/127.0.0.1/' /tmp/.kube/config
           echo "KUBECONFIG=/tmp/.kube/config" >> $GITHUB_ENV
-      - name: 'Currently running services'
-        run: kubectl get ns
+      - name: 'All running pods in all namespaces'
+        run: kubectl get pods -A
