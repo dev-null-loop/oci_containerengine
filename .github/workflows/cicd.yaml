@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      COMPARTMENT_NAME: dev
+      COMPARTMENT_NAME: work
       K8S_CLUSTER_NAME: cluster
     steps:
       - name: Checkout
@@ -40,11 +40,11 @@ jobs:
         run: |
           oci setup repair-file-permissions --file ~/.oci/config
           oci setup repair-file-permissions --file ~/.oci/key.pem
-          echo "COMPARTMENT_OCID=ocid1.compartment.oc1..aaaaaaaa7sjjhowkrqmg6hjcsrkzftqgygt272aig2yycgmd5a7paw5unoea" >> $GITHUB_ENV
+          echo "COMPARTMENT_OCID=ocid1.compartment.oc1..aaaaaaaa64v3nqu4jauy726w3sui4r54pnbf6lphsez4e747pbbwwn3ccogq" >> $GITHUB_ENV
       - name: 'Retrieve OCI bastion resource ID'
         run: |
           echo "CLUSTER_PRIVATE_IP=10.0.0.3" >> $GITHUB_ENV
-          echo "CLUSTER_ID=ocid1.cluster.oc1.eu-frankfurt-1.aaaaaaaayrdzqc4tssy4o4hkxbhkskonkkvhdg7jzu5odxagsc3z5lzm55kq" >> $GITHUB_ENV
+          echo "CLUSTER_ID=ocid1.cluster.oc1.eu-frankfurt-1.aaaaaaaaky3gkstzkdj6llxglvpipe6r23b25ctbqfw2aekcvcssvuhqxc2q" >> $GITHUB_ENV
       - name: 'Retrieve session resource ID'
         run: |
           oci setup repair-file-permissions --file ~/.oci/config
