@@ -1,39 +1,81 @@
-name: OKE-OIDC
-
+name: Master CI/CD
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-permissions:
-  id-token: write # Required to receive OIDC tokens
-
-# This workflow generates a GitHub Actions OIDC token and runs kubectl command in an OKE cluster
+    branches:
+      - 'main'
+      - 'feature/**'
 jobs:
-  oke-oidc:
+  build:
     runs-on: ubuntu-latest
+    env:
+      COMPARTMENT_NAME: work
+      K8S_CLUSTER_NAME: cluster
     steps:
-      - name: Create OIDC Token
-        id: create-oidc-token
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
+      - name: 'Install OCI CLI'
         run: |
-          AUDIENCE="oke-kubernetes-cluster"
-          OIDC_URL_WITH_AUDIENCE="$ACTIONS_ID_TOKEN_REQUEST_URL&audience=$AUDIENCE"
-          IDTOKEN=$(curl \
-            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            -H "Accept: application/json; api-version=2.0" \
-            "$OIDC_URL_WITH_AUDIENCE" | jq -r .value)
-          echo "::add-mask::${IDTOKEN}"
-          echo "idToken=${IDTOKEN}" >> $GITHUB_OUTPUT
-
-      - name: Check Permissions in Kubernetes
+          mkdir ~/.oci
+          echo "${{ secrets.OCI_CONFIG }}" > ~/.oci/config
+          echo "${{ secrets.OCI_KEY_FILE }}" > ~/.oci/key.pem
+          curl -L -O https://raw.githubusercontent.com/oracle/oci-cli/master/scripts/install/install.sh
+          chmod +x install.sh
+          ./install.sh --accept-all-defaults
+          echo "/home/runner/bin" >> $GITHUB_PATH
+          exec -l $SHELL
+      - name: 'Prepare SSH key and config'
         run: |
-          kubectl \
-          --token=$ \
-          --server="https://132.226.195.169:6443" \
-          --insecure-skip-tls-verify \
-          auth can-i --list
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY_FILE }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PUBLIC_KEY_FILE }}" > ~/.ssh/id_rsa.pub
+          chmod 600 ~/.ssh/id_rsa
+      - name: 'Retrieve OCI compartment resource ID'
+        run: |
+          oci setup repair-file-permissions --file ~/.oci/config
+          oci setup repair-file-permissions --file ~/.oci/key.pem
+          echo "COMPARTMENT_OCID=ocid1.compartment.oc1..aaaaaaaa64v3nqu4jauy726w3sui4r54pnbf6lphsez4e747pbbwwn3ccogq" >> $GITHUB_ENV
+      - name: 'Retrieve OCI bastion resource ID'
+        run: |
+          echo "CLUSTER_PRIVATE_IP=10.0.0.3" >> $GITHUB_ENV
+          echo "CLUSTER_ID=ocid1.cluster.oc1.eu-frankfurt-1.aaaaaaaaky3gkstzkdj6llxglvpipe6r23b25ctbqfw2aekcvcssvuhqxc2q" >> $GITHUB_ENV
+      - name: 'Retrieve session resource ID'
+        run: |
+          oci setup repair-file-permissions --file ~/.oci/config
+          oci setup repair-file-permissions --file ~/.oci/key.pem
+          # echo "PORT_FORWARDING_OCID=$(oci bastion session list --bastion-id ${{ env.BASTION_OCID }} --session-lifecycle-state ACTIVE --all | python3 -c "
+          # import sys, json;
+          # try:
+          #   print(json.dumps([x for x in json.load(sys.stdin)['data'] if x['target-resource-details']['session-type'] == 'PORT_FORWARDING']))
+          # except:
+          #   print('[{\"id\":\"error\"}]')
+          # " | jq '.[0].id')" >> $GITHUB_ENV
+      - name: 'Check the exists session'
+        run: |
+          oci setup repair-file-permissions --file ~/.oci/config
+          oci setup repair-file-permissions --file ~/.oci/key.pem
+          # if [ ${{ env.PORT_FORWARDING_OCID }} == 'error' ]; then oci bastion session create-port-forwarding --bastion-id ${{ env.BASTION_OCID }} --display-name github-to-private-k8s-api --ssh-public-key-file ~/.ssh/id_rsa.pub --key-type PUB --target-private-ip ${{ env.CLUSTER_PRIVATE_IP }} --target-port 6443 --session-ttl 1800; sleep 30; echo "PORT_FORWARDING_OCID=$(oci bastion session list --bastion-id ${{ env.BASTION_OCID }} --session-lifecycle-state ACTIVE --all | python3 -c "import sys, json; print(json.dumps([x for x in json.load(sys.stdin)['data'] if x['target-resource-details']['session-type'] == 'PORT_FORWARDING']))" | jq '.[0].id')" >> $GITHUB_ENV; else echo "PORT_FORWARDING_OCID=$(oci bastion session list --bastion-id ${{ env.BASTION_OCID }} --session-lifecycle-state ACTIVE --all | python3 -c "import sys, json; print(json.dumps([x for x in json.load(sys.stdin)['data'] if x['target-resource-details']['session-type'] == 'PORT_FORWARDING']))" | jq '.[0].id')" >> $GITHUB_ENV; fi
+      - name: 'Check Environment Variables from GH'
+        run: |
+          cat $GITHUB_ENV
+          echo "++++++++++++++++++++++++++++++++++++"
+          echo "CLUSTER_ID = ${{ env.CLUSTER_ID }}"
+          echo "COMPARTMENT_OCID = ${{ env.COMPARTMENT_OCID }}"
+          echo "CLUSTER_PRIVATE_IP = ${{ env.CLUSTER_PRIVATE_IP }}"
+          echo "PORT_FORWARDING_OCID = ${{ env.PORT_FORWARDING_OCID }}"
+      - name: 'Install kubectl'
+        run: |
+          mkdir /tmp/.kube
+          curl -L -O "https://dl.k8s.io/release/v1.33.1/bin/linux/amd64/kubectl" -o kubectl
+          chmod +x kubectl
+          mv kubectl /usr/local/bin
+          oci ce cluster create-kubeconfig --cluster-id ${{ env.CLUSTER_ID }} --file /tmp/.kube/config --region eu-frankfurt-1 --token-version 2.0.0
+          echo "KUBECONFIG=/tmp/.kube/config" >> $GITHUB_ENV
+      - name: 'All running pods in all namespaces'
+        run: kubectl get pods -A
