@@ -95,7 +95,10 @@ variable "node_eviction_node_pool_settings" {
 variable "node_metadata" {
   description = "(Optional) (Updatable) A list of key/value pairs to add to each underlying Oracle Cloud Infrastructure instance in the node pool on launch."
   type        = map(string)
-  default     = {}
+  default = {
+    trigger_cycle                  = 1
+    areLegacyImdsEndpointsDisabled = true
+  }
 }
 
 variable "node_pool_cycling_details" {
