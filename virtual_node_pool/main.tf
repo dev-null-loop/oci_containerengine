@@ -15,7 +15,7 @@ resource "oci_containerengine_virtual_node_pool" "this" {
     iterator = pc
     content {
       availability_domain = local.ads[pc.value.availability_domain - 1].name
-      fault_domain        = [pc.value.fault_domain]
+      fault_domain        = format("FAULT-DOMAIN-%s", pc.value.fault_domain)
       subnet_id           = var.subnet_ids[pc.value.subnet_name]
     }
   }
