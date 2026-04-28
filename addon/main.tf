@@ -4,11 +4,12 @@ resource "oci_containerengine_addon" "this" {
   remove_addon_resources_on_delete = var.remove_addon_resources_on_delete
   dynamic "configurations" {
     for_each = var.configurations
+    iterator = co
     content {
-      key   = configurations.key
-      value = configurations.value
+      key   = co.value.key
+      value = co.value.value
     }
   }
   override_existing = var.override_existing
-  version           = var.addon_version
+  version           = var.version
 }

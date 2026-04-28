@@ -11,13 +11,15 @@ variable "cluster_id" {
 variable "remove_addon_resources_on_delete" {
   description = "(Required) Whether to remove addon resource in deletion."
   type        = bool
-  default     = true
 }
 
 variable "configurations" {
   description = "(Optional) (Updatable) Addon configuration details"
-  type        = map(string)
-  default     = {}
+  type = list(object({
+    key   = optional(string)
+    value = optional(string)
+  }))
+  default = []
 }
 
 variable "override_existing" {
@@ -26,8 +28,8 @@ variable "override_existing" {
   default     = false
 }
 
-variable "addon_version" {
+variable "version" {
   description = "(Optional) (Updatable) The version of addon to be installed."
-  type        = number
+  type        = string
   default     = null
 }
