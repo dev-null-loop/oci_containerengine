@@ -28,7 +28,7 @@ variable "override_existing" {
   default     = false
 }
 
-variable "version" {
+variable "addon_version" {
   description = "(Optional) (Updatable) The version of addon to be installed."
   type        = string
   default     = null

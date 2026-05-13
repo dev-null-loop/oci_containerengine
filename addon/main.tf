@@ -11,5 +11,5 @@ resource "oci_containerengine_addon" "this" {
     }
   }
   override_existing = var.override_existing
-  version           = var.version
+  version           = var.addon_version
 }
