@@ -27,31 +27,31 @@ resource "oci_containerengine_node_pool" "this" {
     iterator = ncd
     content {
       dynamic "placement_configs" {
-	for_each = ncd.value.placement_configs[*]
-	iterator = pc
-	content {
-	  availability_domain     = local.ads[pc.value.availability_domain - 1].name
-	  subnet_id               = var.subnet_ids[pc.value.subnet_name]
-	  fault_domains           = try([for i in pc.value.fault_domains : format("FAULT-DOMAIN-%s", pc.value.fault_domain)], [])
-	  capacity_reservation_id = pc.value.capacity_reservation_id
-	}
+        for_each = ncd.value.placement_configs[*]
+        iterator = pc
+        content {
+          availability_domain     = local.ads[pc.value.availability_domain - 1].name
+          subnet_id               = var.subnet_ids[pc.value.subnet_name]
+          fault_domains           = try([for i in pc.value.fault_domains : format("FAULT-DOMAIN-%s", pc.value.fault_domain)], [])
+          capacity_reservation_id = pc.value.capacity_reservation_id
+        }
       }
       size                                = ncd.value.size
       is_pv_encryption_in_transit_enabled = ncd.value.is_pv_encryption_in_transit_enabled
       kms_key_id                          = ncd.value.kms_key_id
       dynamic "node_pool_pod_network_option_details" {
-	for_each = ncd.value.node_pool_pod_network_option_details[*]
-	iterator = i
-	content {
-	  cni_type          = i.value.cni_type
-	  max_pods_per_node = i.value.max_pods_per_node
-	  pod_nsg_ids       = i.value.pod_nsg_ids
-	  pod_subnet_ids = (
-	    i.value.cni_type == "OCI_VCN_IP_NATIVE" ?
-	    [for k in i.value.pod_subnet_names : lookup(var.pod_subnet_ids, k)] :
-	    []
-	  )
-	}
+        for_each = ncd.value.node_pool_pod_network_option_details[*]
+        iterator = i
+        content {
+          cni_type          = i.value.cni_type
+          max_pods_per_node = i.value.max_pods_per_node
+          pod_nsg_ids       = i.value.pod_nsg_ids
+          pod_subnet_ids = (
+            i.value.cni_type == "OCI_VCN_IP_NATIVE" ?
+            [for k in i.value.pod_subnet_names : lookup(var.pod_subnet_ids, k)] :
+            []
+          )
+        }
       }
       defined_tags  = ncd.value.defined_tags
       freeform_tags = ncd.value.freeform_tags
@@ -68,9 +68,9 @@ resource "oci_containerengine_node_pool" "this" {
   }
   node_metadata = merge(
     var.node_metadata,
-    {
+    length(local.cloud_init_parts) > 0 ? {
       user_data = try(base64encode(data.cloudinit_config.this[0].rendered), null)
-    }
+    } : {}
   )
   dynamic "node_pool_cycling_details" {
     for_each = var.node_pool_cycling_details[*]

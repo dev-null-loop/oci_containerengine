@@ -101,6 +101,25 @@ variable "node_metadata" {
   }
 }
 
+variable "cloud_init" {
+  description = "(Optional) Ordered cloud-init parts rendered into node_metadata.user_data for managed nodes."
+  type = list(object({
+    filename     = optional(string)
+    content      = optional(string)
+    content_type = optional(string)
+    vars         = optional(map(string), {})
+  }))
+  default = []
+
+  validation {
+    condition = alltrue([
+      for p in var.cloud_init :
+      p.filename != null || p.content != null
+    ])
+    error_message = "Each cloud_init part must define either filename or content."
+  }
+}
+
 variable "node_pool_cycling_details" {
   description = "(Optional) (Updatable) Node Pool Cycling Details"
   type = object({
