@@ -36,12 +36,23 @@ variable "kms_key_id" {
   default     = null
 }
 
+variable "cluster_pod_network_options" {
+  description = "(Optional) Available CNIs and network options for existing and new node pools of the cluster."
+  type = object({
+    cni_type = string
+  })
+  default = null
+}
+
 variable "cni_type" {
   description = "(Required) The CNI used by the node pools of this cluster"
   type        = string
-  default     = "FLANNEL_OVERLAY"
+  default     = null
   validation {
-    condition     = contains(["FLANNEL_OVERLAY", "OCI_VCN_IP_NATIVE"], var.cni_type)
+    condition = (
+      var.cni_type == null ||
+      contains(["FLANNEL_OVERLAY", "OCI_VCN_IP_NATIVE"], var.cni_type)
+    )
     error_message = "Error: cni_type must be either FLANNEL_OVERLAY or OCI_VCN_IP_NATIVE."
   }
 }
@@ -50,19 +61,20 @@ variable "endpoint_config" {
   description = "(Required) The network configuration for access to the Cluster control plane."
   type = object({
     is_public_ip_enabled = optional(bool)
-    nsg_ids              = optional(list(string))
-    subnet_id            = optional(string)
+    nsg_ids              = optional(list(string), [])
+    subnet_id            = string
   })
-  default = {
-    nsg_ids = []
-  }
+  default = null
 }
 
 variable "image_policy_config" {
   description = "(Optional) (Updatable) The image verification policy for signature validation. Once a policy is created and enabled with one or more kms keys, the policy will ensure all images deployed has been signed with the key(s) attached to the policy. "
   type = object({
     is_policy_enabled = optional(bool)
-    kms_key_id        = optional(string)
+    key_details = optional(list(object({
+      kms_key_id = optional(string)
+    })), [])
+    kms_key_id = optional(string)
   })
   default = null
 }
@@ -70,7 +82,15 @@ variable "image_policy_config" {
 variable "options" {
   description = "(Optional) (Updatable) Optional attributes for the cluster."
   type = object({
+    add_ons = optional(object({
+      is_kubernetes_dashboard_enabled = optional(bool)
+      is_tiller_enabled               = optional(bool)
+    }))
+    admission_controller_options = optional(object({
+      is_pod_security_policy_enabled = optional(bool)
+    }))
     dashboard_enabled = optional(bool)
+    ip_families       = optional(list(string))
     kubernetes_network_config = optional(object({
       pods_cidr     = optional(string)
       services_cidr = optional(string)
@@ -83,10 +103,14 @@ variable "options" {
       groups_prefix                   = optional(string)
       is_open_id_connect_auth_enabled = bool
       issuer_url                      = optional(string)
-      required_claims = optional(object({
-	key   = optional(string)
-	value = optional(string)
+      required_claim = optional(object({
+        key   = optional(string)
+        value = optional(string)
       }))
+      required_claims = optional(list(object({
+        key   = optional(string)
+        value = optional(string)
+      })), [])
       signing_algorithms = optional(list(string))
       username_claim     = optional(string)
       username_prefix    = optional(string)
@@ -99,16 +123,13 @@ variable "options" {
       freeform_tags = optional(map(string))
     }))
     service_lb_config = optional(object({
-      defined_tags  = optional(map(string))
-      freeform_tags = optional(map(string))
+      backend_nsg_ids = optional(list(string))
+      defined_tags    = optional(map(string))
+      freeform_tags   = optional(map(string))
     }))
     service_lb_subnet_ids = optional(list(string))
   })
-  default = {
-    open_id_connect_discovery = {
-      is_open_id_connect_discovery_enabled = true
-    }
-  }
+  default = null
 }
 
 variable "type" {
