@@ -4,16 +4,10 @@ resource "oci_containerengine_cluster" "this" {
   name               = var.name
   vcn_id             = var.vcn_id
   dynamic "cluster_pod_network_options" {
-    for_each = (
-      var.cluster_pod_network_options != null ||
-      var.cni_type != null
-    ) ? [1] : []
+    for_each = var.cluster_pod_network_options[*]
     iterator = cpno
     content {
-      cni_type = coalesce(
-        try(var.cluster_pod_network_options.cni_type, null),
-        var.cni_type
-      )
+      cni_type = cpno.value.cni_type
     }
   }
   defined_tags = var.defined_tags
@@ -33,9 +27,7 @@ resource "oci_containerengine_cluster" "this" {
     content {
       is_policy_enabled = ipc.value.is_policy_enabled
       dynamic "key_details" {
-        for_each = length(ipc.value.key_details) > 0 ? ipc.value.key_details : (
-          ipc.value.kms_key_id != null ? [{ kms_key_id = ipc.value.kms_key_id }] : []
-        )
+        for_each = ipc.value.key_details
         iterator = kd
         content {
           kms_key_id = kd.value.kms_key_id
@@ -48,9 +40,13 @@ resource "oci_containerengine_cluster" "this" {
     for_each = var.options[*]
     iterator = o
     content {
-      add_ons {
-        is_kubernetes_dashboard_enabled = coalesce(try(o.value.add_ons.is_kubernetes_dashboard_enabled, null), o.value.dashboard_enabled)
-        is_tiller_enabled               = coalesce(try(o.value.add_ons.is_tiller_enabled, null), false)
+      dynamic "add_ons" {
+        for_each = o.value.add_ons[*]
+        iterator = ao
+        content {
+          is_kubernetes_dashboard_enabled = ao.value.is_kubernetes_dashboard_enabled
+          is_tiller_enabled               = ao.value.is_tiller_enabled
+        }
       }
       dynamic "admission_controller_options" {
         for_each = o.value.admission_controller_options[*]
@@ -80,10 +76,7 @@ resource "oci_containerengine_cluster" "this" {
           groups_prefix                   = open_id.value.groups_prefix
           issuer_url                      = open_id.value.issuer_url
           dynamic "required_claims" {
-            for_each = concat(
-              open_id.value.required_claim != null ? [open_id.value.required_claim] : [],
-              open_id.value.required_claims
-            )
+            for_each = open_id.value.required_claims
             iterator = rc
             content {
               key   = rc.value.key

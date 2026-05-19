@@ -31,7 +31,7 @@ variable "freeform_tags" {
 }
 
 variable "kms_key_id" {
-  description = "(Optional) (Updatable) The OCIDs of the KMS key that will be used to verify whether the images are signed by an approved source."
+  description = "(Optional) The OCID of the KMS key to be used as the master encryption key for Kubernetes secret encryption. When used, `kubernetesVersion` must be at least `v1.13.0`."
   type        = string
   default     = null
 }
@@ -44,21 +44,8 @@ variable "cluster_pod_network_options" {
   default = null
 }
 
-variable "cni_type" {
-  description = "(Required) The CNI used by the node pools of this cluster"
-  type        = string
-  default     = null
-  validation {
-    condition = (
-      var.cni_type == null ||
-      contains(["FLANNEL_OVERLAY", "OCI_VCN_IP_NATIVE"], var.cni_type)
-    )
-    error_message = "Error: cni_type must be either FLANNEL_OVERLAY or OCI_VCN_IP_NATIVE."
-  }
-}
-
 variable "endpoint_config" {
-  description = "(Required) The network configuration for access to the Cluster control plane."
+  description = "(Optional) The network configuration for access to the Cluster control plane."
   type = object({
     is_public_ip_enabled = optional(bool)
     nsg_ids              = optional(list(string), [])
@@ -74,7 +61,6 @@ variable "image_policy_config" {
     key_details = optional(list(object({
       kms_key_id = optional(string)
     })), [])
-    kms_key_id = optional(string)
   })
   default = null
 }
@@ -89,8 +75,7 @@ variable "options" {
     admission_controller_options = optional(object({
       is_pod_security_policy_enabled = optional(bool)
     }))
-    dashboard_enabled = optional(bool)
-    ip_families       = optional(list(string))
+    ip_families = optional(list(string))
     kubernetes_network_config = optional(object({
       pods_cidr     = optional(string)
       services_cidr = optional(string)
@@ -103,10 +88,6 @@ variable "options" {
       groups_prefix                   = optional(string)
       is_open_id_connect_auth_enabled = bool
       issuer_url                      = optional(string)
-      required_claim = optional(object({
-        key   = optional(string)
-        value = optional(string)
-      }))
       required_claims = optional(list(object({
         key   = optional(string)
         value = optional(string)
