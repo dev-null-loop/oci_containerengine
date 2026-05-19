@@ -3,6 +3,11 @@ output "id" {
   value       = oci_containerengine_addon.this.id
 }
 
+output "addon_error" {
+  description = "The error info of the addon."
+  value       = oci_containerengine_addon.this.addon_error
+}
+
 output "addon_name" {
   description = "The name of the addon."
   value       = oci_containerengine_addon.this.addon_name
@@ -11,6 +16,11 @@ output "addon_name" {
 output "cluster_id" {
   description = "The OCID of the cluster."
   value       = oci_containerengine_addon.this.cluster_id
+}
+
+output "configurations" {
+  description = "Addon configuration details."
+  value       = oci_containerengine_addon.this.configurations
 }
 
 output "state" {
