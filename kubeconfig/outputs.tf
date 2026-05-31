@@ -4,14 +4,6 @@ output "kubeconfig" {
 }
 
 output "kubeconfig_instance_principal" {
-  value     = var.instance_principal_enabled ? local.kubeconfig_instance_principal : null
+  value     = local.kubeconfig_instance_principal
   sensitive = true
-}
-
-output "kubeconfig_filename" {
-  value = var.write_files ? local.kubeconfig_filename : null
-}
-
-output "kubeconfig_instance_principal_filename" {
-  value = var.write_files && var.instance_principal_enabled ? local.kubeconfig_instance_principal_file : null
 }
