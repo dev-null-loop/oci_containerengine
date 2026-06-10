@@ -1,11 +1,3 @@
-data "oci_identity_availability_domains" "these" {
-  compartment_id = var.compartment_id
-}
-
-locals {
-  ads = data.oci_identity_availability_domains.these.availability_domains
-}
-
 resource "oci_containerengine_node_pool" "this" {
   cluster_id     = var.cluster_id
   compartment_id = var.compartment_id
@@ -30,9 +22,9 @@ resource "oci_containerengine_node_pool" "this" {
         for_each = ncd.value.placement_configs[*]
         iterator = pc
         content {
-          availability_domain     = local.ads[pc.value.availability_domain - 1].name
-          subnet_id               = var.subnet_ids[pc.value.subnet_name]
-          fault_domains           = try([for i in pc.value.fault_domains : format("FAULT-DOMAIN-%s", pc.value.fault_domain)], [])
+          availability_domain     = pc.value.availability_domain
+          subnet_id               = pc.value.subnet_id
+          fault_domains           = pc.value.fault_domains
           capacity_reservation_id = pc.value.capacity_reservation_id
         }
       }
@@ -46,11 +38,7 @@ resource "oci_containerengine_node_pool" "this" {
           cni_type          = i.value.cni_type
           max_pods_per_node = i.value.max_pods_per_node
           pod_nsg_ids       = i.value.pod_nsg_ids
-          pod_subnet_ids = (
-            i.value.cni_type == "OCI_VCN_IP_NATIVE" ?
-            [for k in i.value.pod_subnet_names : lookup(var.pod_subnet_ids, k)] :
-            []
-          )
+          pod_subnet_ids    = i.value.pod_subnet_ids
         }
       }
       defined_tags  = ncd.value.defined_tags
@@ -64,6 +52,39 @@ resource "oci_containerengine_node_pool" "this" {
     content {
       eviction_grace_duration              = i.value.eviction_grace_duration
       is_force_delete_after_grace_duration = i.value.is_force_delete_after_grace_duration
+    }
+  }
+  dynamic "secondary_vnics" {
+    for_each = var.secondary_vnics
+    iterator = sv
+    content {
+      display_name = sv.value.display_name
+      nic_index    = sv.value.nic_index
+      dynamic "create_vnic_details" {
+        for_each = [sv.value.create_vnic_details]
+        iterator = cvd
+        content {
+          application_resources  = cvd.value.application_resources
+          assign_ipv6ip          = cvd.value.assign_ipv6ip
+          assign_public_ip       = cvd.value.assign_public_ip
+          defined_tags           = cvd.value.defined_tags
+          display_name           = cvd.value.display_name
+          freeform_tags          = cvd.value.freeform_tags
+          ip_count               = cvd.value.ip_count
+          nsg_ids                = cvd.value.nsg_ids
+          security_attributes    = cvd.value.security_attributes
+          skip_source_dest_check = cvd.value.skip_source_dest_check
+          subnet_id              = cvd.value.subnet_id
+          dynamic "ipv6address_ipv6subnet_cidr_pair_details" {
+            for_each = cvd.value.ipv6address_ipv6subnet_cidr_pair_details
+            iterator = ipv6
+            content {
+              ipv6address     = ipv6.value.ipv6address
+              ipv6subnet_cidr = ipv6.value.ipv6subnet_cidr
+            }
+          }
+        }
+      }
     }
   }
   node_metadata = merge(

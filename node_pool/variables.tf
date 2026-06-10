@@ -56,9 +56,9 @@ variable "node_config_details" {
   description = "(Optional) (Updatable) The configuration of nodes in the node pool. Exactly one of the subnetIds or nodeConfigDetails properties must be specified."
   type = object({
     placement_configs = list(object({
-      availability_domain     = number
-      fault_domains           = optional(list(number))
-      subnet_name             = string
+      availability_domain     = string
+      fault_domains           = optional(list(string))
+      subnet_id               = string
       capacity_reservation_id = optional(string)
     }))
     size                                = number
@@ -67,7 +67,7 @@ variable "node_config_details" {
     node_pool_pod_network_option_details = optional(object({
       cni_type          = string
       max_pods_per_node = optional(number)
-      pod_subnet_names  = optional(list(string))
+      pod_subnet_ids    = optional(list(string))
       pod_nsg_ids       = optional(list(string))
     }))
     defined_tags  = optional(map(string))
@@ -158,9 +158,30 @@ variable "ssh_public_key" {
   default     = null
 }
 
-variable "subnet_ids" {
-  description = "(Optional) (Updatable) The OCIDs of the subnets in which to place nodes for this node pool. When used, quantityPerSubnet can be provided. This property is deprecated, use nodeConfigDetails. Exactly one of the subnetIds or nodeConfigDetails properties must be specified."
-  type        = map(string)
+variable "secondary_vnics" {
+  description = "(Optional) Secondary VNIC profiles for GVA-managed pod networking."
+  type = list(object({
+    display_name = optional(string)
+    nic_index    = optional(number)
+    create_vnic_details = object({
+      application_resources  = optional(list(string))
+      assign_ipv6ip          = optional(bool)
+      assign_public_ip       = optional(bool)
+      defined_tags           = optional(map(string))
+      display_name           = optional(string)
+      freeform_tags          = optional(map(string))
+      ip_count               = optional(number)
+      nsg_ids                = optional(list(string))
+      security_attributes    = optional(map(string))
+      skip_source_dest_check = optional(bool)
+      subnet_id              = string
+      ipv6address_ipv6subnet_cidr_pair_details = optional(list(object({
+        ipv6address     = optional(string)
+        ipv6subnet_cidr = optional(string)
+      })), [])
+    })
+  }))
+  default = []
 }
 
 variable "image_id" {
@@ -181,9 +202,4 @@ variable "ubuntu_release" {
   description = "(Optional) For worker nodes on Ubuntu"
   type        = string
   default     = null
-}
-
-variable "pod_subnet_ids" {
-  type    = map(string)
-  default = {}
 }
