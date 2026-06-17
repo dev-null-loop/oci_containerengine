@@ -60,7 +60,9 @@ variable "node_config_details" {
       fault_domains           = optional(list(string))
       subnet_id               = string
       capacity_reservation_id = optional(string)
+      host_group_id           = optional(string)
     }))
+    compute_cluster_id                  = optional(string)
     size                                = number
     is_pv_encryption_in_transit_enabled = optional(bool)
     kms_key_id                          = optional(string)

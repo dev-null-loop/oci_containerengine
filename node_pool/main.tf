@@ -18,6 +18,7 @@ resource "oci_containerengine_node_pool" "this" {
     for_each = var.node_config_details[*]
     iterator = ncd
     content {
+      compute_cluster_id = ncd.value.compute_cluster_id
       dynamic "placement_configs" {
         for_each = ncd.value.placement_configs[*]
         iterator = pc
@@ -26,6 +27,7 @@ resource "oci_containerengine_node_pool" "this" {
           subnet_id               = pc.value.subnet_id
           fault_domains           = pc.value.fault_domains
           capacity_reservation_id = pc.value.capacity_reservation_id
+          host_group_id           = pc.value.host_group_id
         }
       }
       size                                = ncd.value.size
