@@ -28,6 +28,31 @@ output "endpoints" {
   value       = oci_containerengine_cluster.this.endpoints
 }
 
+output "private_endpoint" {
+  description = "The private native networking Kubernetes API server endpoint."
+  value       = try(oci_containerengine_cluster.this.endpoints[0].private_endpoint, null)
+}
+
+output "public_endpoint" {
+  description = "The public native networking Kubernetes API server endpoint."
+  value       = try(oci_containerengine_cluster.this.endpoints[0].public_endpoint, null)
+}
+
+output "kubernetes_endpoint" {
+  description = "The non-native networking Kubernetes API server endpoint."
+  value       = try(oci_containerengine_cluster.this.endpoints[0].kubernetes, null)
+}
+
+output "ipv6_endpoint" {
+  description = "The IPv6 networking Kubernetes API server endpoint."
+  value       = try(oci_containerengine_cluster.this.endpoints[0].ipv6endpoint, null)
+}
+
+output "vcn_hostname_endpoint" {
+  description = "The FQDN assigned to the Kubernetes API private endpoint."
+  value       = try(oci_containerengine_cluster.this.endpoints[0].vcn_hostname_endpoint, null)
+}
+
 output "freeform_tags" {
   description = "Free-form tags for this resource."
   value       = oci_containerengine_cluster.this.freeform_tags
